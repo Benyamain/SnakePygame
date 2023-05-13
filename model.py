@@ -54,3 +54,30 @@ class QTrainer:
             reward = torch.unsqueeze(reward, 0)
             # A tuple with one value
             game_over = (game_over, )
+
+        # 1) Get the predicted Q values with the current state
+        prediction = self.model(state)
+
+        # 2) Q_new = reward + gamma * max(next_predicted Q value) -> only do this if not done
+        # Have it in the same format as the prediction
+        # prediction.clone()
+        # Action is a value that exists within here [...,...,...]
+        # predictions[argmax(action)] = Q_new
+        target = prediction.clone()
+
+        for idx in range(len(game_over)):
+            Q_new = reward[idx]
+
+            # Rewarding the agent if the game is not over
+            if not game_over[idx]:
+                Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
+
+            target[idx][torch.argmax(action).item()] = Q_new
+
+        # Empty the gradience
+        self.optimizer.zero_grad()
+        # Q_new, Q
+        loss = self.criterion(target, prediction)
+        # Apply backward propagation
+        loss.backward()
+        self.optimizer.step()
