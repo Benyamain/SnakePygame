@@ -56,10 +56,12 @@ class Agent:
         self.epsilon = 0 # To control the randomness of the game
         self.gamma = 0 # Discount rate
         self.memory = deque(maxlen = MAX_MEMORY) # Popleft() if memory is exceeded
-        # TODO: model, trainer
+        self.model = None # TODO
+        self.trainer = None # TODO
 
     def get_state(self, game):
         head = game.snake[0]
+        # 20 is the BLOCK_SIZE
         point_l = Point(head.x - 20, head.y)
         point_r = Point(head.x + 20, head.y)
         point_u = Point(head.x, head.y - 20)
@@ -102,16 +104,28 @@ class Agent:
             game.food.y > game.head.y  # food down
             ]
 
+        # Convert the booleans to an int
         return np.array(state, dtype=int)
 
     def remember(self, state, action, reward, next_state, game_over):
-        pass
+        # One tuple that we store due to the (())
+        self.memory.append((state, action, reward, next_state, game_over)) # Popleft() if MAX_MEMORY is reached
 
     def train_long_memory(self):
-        pass
+        if len(self.memory) > BATCH_SIZE:
+            mini_sample = random.sample(self.memory, BATCH_SIZE) # Return a list of tuples
+        else:
+            mini_sample = self.memory
+
+        states, actions, rewards, next_states, game_overs = zip(*mini_sample)
+        self.trainer.train_step(states, actions, rewards, next_states, game_overs)
+        
+        # Another way of doing it besides the zip function
+        # for state, action, reward, next_state, game_over in mini_sample:
+        #     self.trainer.train_step(state, action, reward, next_state, game_over)
 
     def train_short_memory(self, state, action, reward, next_state, game_over):
-        pass
+        self.trainer.train_step(state, action, reward, next_state, game_over)
 
     def get_action(self, state):
         pass
