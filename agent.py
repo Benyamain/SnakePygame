@@ -3,6 +3,7 @@ import random
 import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
+from model import Linear_QNet, QTrainer
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -54,10 +55,12 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0 # To control the randomness of the game
-        self.gamma = 0 # Discount rate
+        # Must be a value smaller than 1
+        self.gamma = 0.9 # Discount rate
         self.memory = deque(maxlen = MAX_MEMORY) # Popleft() if memory is exceeded
-        self.model = None # TODO
-        self.trainer = None # TODO
+        # 11 states, hidden size can be played around with, output must be 3 (3 different actions)
+        self.model = Linear_QNet(11, 256, 3)
+        self.trainer = QTrainer(self.model, learning_rate = LEARNING_RATE, gamma = self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
@@ -139,7 +142,7 @@ class Agent:
             final_move[move] = 1
         else:
             state_0 = torch.tensor(state, dtype = torch.float)
-            prediction = self.model.predict(state_0)
+            prediction = self.model(state_0)
             # Converts raw data to singular value
             move = torch.argmax(prediction).item()
             final_move[move] = 1
