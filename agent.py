@@ -128,7 +128,23 @@ class Agent:
         self.trainer.train_step(state, action, reward, next_state, game_over)
 
     def get_action(self, state):
-        pass
+        # Do some random moves: Tradeoff between exploration / exploitation
+        # Algorithm makes the snake explore freely until it reaches about 80 games through scope of randomness
+        self.epsilon = 80 - self.n_games
+        final_move = [0,0,0]
+
+        if random.randint(0, 200) < self.epsilon:
+            move = random.randint(0, 2)
+            # Set the [...,...,...]
+            final_move[move] = 1
+        else:
+            state_0 = torch.tensor(state, dtype = torch.float)
+            prediction = self.model.predict(state_0)
+            # Converts raw data to singular value
+            move = torch.argmax(prediction).item()
+            final_move[move] = 1
+        
+        return final_move
 
 if __name__ == '__main__':
     train()
