@@ -43,7 +43,7 @@ def train():
 
             if score > best_score:
                 best_score = score
-                # agent.model.save()
+                agent.model.save()
             
             print('Game:', agent.n_games, 'Score:', score, 'Best Score:', best_score)
 
