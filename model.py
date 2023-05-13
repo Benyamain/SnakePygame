@@ -35,7 +35,7 @@ class QTrainer:
         self.gamma = gamma
         self.model = model
         # Optimization step
-        self.optimizer = optim.Adam(model.parameters(), learning_rate = self.learning_rate)
+        self.optimizer = optim.Adam(model.parameters(), self.learning_rate)
         # Criterion: To track the loss (a loss function)
         self.criterion = nn.MSELoss()
 
